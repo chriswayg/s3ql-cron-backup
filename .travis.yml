@@ -17,7 +17,7 @@ script:
   - docker run -d --init --name=s3ql-filesystem_1 --cap-add sys_admin --device=/dev/fuse -e S3QL_STORAGE_URL="gs://travis-temp-test-bucket" -e S3QL_BACKEND_LOGIN="GOOGNDASIXLIDR6A45APYFNC" -e S3QL_BACKEND_PASSWORD="Q0yOJofPrzg13Qa3R5cNnlu/WIUPO9BeCm6bFtia" -e S3QL_FS_PASSPHRASE="NVPBHCzWirXdHE9vDYAhcXTeXDnpBLoxDZqcpvfm" -e S3QL_CRONTAB="*/1 * * * * echo 'Hello'" s3ql-cron-backup
   - sleep 90
   - docker logs s3ql-filesystem_1
-  - docker exec -t s3ql-filesystem_1 | grep mnt
+  - docker exec -t s3ql-filesystem_1 mount | grep mnt
   - docker exec -t s3ql-filesystem_1 s3ql status
   - docker stop s3ql-filesystem_1
   - sleep 3
