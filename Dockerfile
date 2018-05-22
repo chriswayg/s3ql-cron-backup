@@ -11,12 +11,8 @@ ENV S3QL_MOUNT_OPTIONS="--allow-other"
 ENV S3QL_MOUNTPOINT="/mnt/s3ql"
 ENV S3QL_PREFIX="default"
 
-COPY s3ql /etc/init.d/s3ql
-
 # Install dependencies.
 RUN apk --no-cache add --update \
-      openrc \
-      busybox-initscripts \
       shadow \
       coreutils \
       util-linux \
@@ -33,29 +29,6 @@ RUN apk --no-cache add --update \
       attr-dev \
       fuse-dev \
       sqlite-dev \
- # Disable getty's
- && sed -i 's/^\(tty\d\:\:\)/#\1/g' /etc/inittab \
- && sed -i \
-      # Change subsystem type to "docker"
-      -e 's/#rc_sys=".*"/rc_sys="docker"/g' \
-      # Allow all variables through
-      -e 's/#rc_env_allow=".*"/rc_env_allow="\*"/g' \
-      # Start crashed services
-      -e 's/#rc_crashed_stop=.*/rc_crashed_stop=NO/g' \
-      -e 's/#rc_crashed_start=.*/rc_crashed_start=YES/g' \
-      # Define extra dependencies for services
-      -e 's/#rc_provide=".*"/rc_provide="loopback net"/g' \
-      /etc/rc.conf \
- # Remove unnecessary services
- && rm -vf \
-      /etc/init.d/hwdrivers \
-      /etc/init.d/hwclock \
-      /etc/init.d/modules \
-      /etc/init.d/modules-load \
-      /etc/init.d/modloop \
- # Can't do cgroups
- && sed -i 's/cgroup_add_service /# cgroup_add_service /g' /lib/rc/sh/openrc-run.sh \
- #&& sed -i 's/VSERVER/DOCKER/Ig' /lib/rc/sh/init.sh \
  # Upgrade pip and install Python module dependencies
  && pip3 install --upgrade pip \
  && pip3 install pycrypto defusedxml requests apsw llfuse dugong setuptools pytest \
@@ -78,10 +51,9 @@ RUN apk --no-cache add --update \
  && apk del build-base python3-dev attr-dev fuse-dev sqlite-dev \
  && rm -r /tmp/s3ql-${S3QL_VERSION} \
  && echo -e "*** Installed \c" \
- && mount.s3ql --version \
- && rc-update add s3ql default
+ && mount.s3ql --version
 
-# Copy docker-entrypoint
+# Copy docker-entrypoint, s3ql
 COPY ./scripts/ /usr/local/bin/
 
 # Persist data
