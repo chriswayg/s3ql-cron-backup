@@ -1,18 +1,34 @@
 #!/bin/sh
-# Description: S3QL is an encrypting filesystem that stores its data online
-#
+# Script to mount, unmount and show status of S3QL filesystem
 
 DESC="S3QL filesystem"
 
+mkdir -pv ${S3QL_MOUNTPOINT}
 mkdir -p /var/log/s3ql
 
 case "$1" in
-  start)
+  makefs)
 	# if mountpoint -q "${S3QL_MOUNTPOINT}"; then
   #       echo "ERROR: $DESC ${S3QL_STORAGE_URL}/${S3QL_PREFIX} is already mounted at ${S3QL_MOUNTPOINT}"
 	# 	exit 1
 	# fi
-	echo "Mounting $DESC" "${S3QL_STORAGE_URL}/${S3QL_PREFIX} at ${S3QL_MOUNTPOINT}"
+	echo "Creating $DESC" "${S3QL_STORAGE_URL}/${S3QL_PREFIX}"
+  # Create S3QL encrypted filesystem (run only once).
+  printf '%s\n' "${S3QL_FS_PASSPHRASE}" "${S3QL_FS_PASSPHRASE}" | mkfs.s3ql --authfile ${S3QL_AUTHINFO_FILE} --cachedir ${S3QL_CACHE_DIR} ${S3QL_STORAGE_URL}/${S3QL_PREFIX}
+	STA=$?
+	if [ $STA -eq 0 ]; then
+        echo "Successfully created filesystem on ${S3QL_STORAGE_URL}/${S3QL_PREFIX}"
+    else
+        echo "ERROR: this is the error code: $STA"
+		exit $STA
+	fi
+	;;
+  mount)
+	# if mountpoint -q "${S3QL_MOUNTPOINT}"; then
+  #       echo "ERROR: $DESC ${S3QL_STORAGE_URL}/${S3QL_PREFIX} is already mounted at ${S3QL_MOUNTPOINT}"
+	# 	exit 1
+	# fi
+	echo "Mounting $DESC ${S3QL_STORAGE_URL}/${S3QL_PREFIX} at ${S3QL_MOUNTPOINT}"
 	# Check and mount file system
 	fsck.s3ql --batch --log /var/log/s3ql/fsck.log --authfile ${S3QL_AUTHINFO_FILE} ${S3QL_STORAGE_URL}/${S3QL_PREFIX}
 	STA=$?
@@ -30,11 +46,11 @@ case "$1" in
 		exit $STA
 	fi
 	;;
-  stop)
+  unmount)
 	# if ! mountpoint -q ${S3QL_MOUNTPOINT}; then
   #       echo "ERROR: $DESC ${S3QL_STORAGE_URL}/${S3QL_PREFIX} is currently not mounted at ${S3QL_MOUNTPOINT}"
   #       exit 1
-  #   fi
+  # fi
 	echo "Unmounting $DESC ${S3QL_STORAGE_URL}/${S3QL_PREFIX} from ${S3QL_MOUNTPOINT}"
         s3qlctrl flushcache ${S3QL_MOUNTPOINT}
 	      s3qlctrl upload-meta ${S3QL_MOUNTPOINT}
@@ -50,13 +66,13 @@ case "$1" in
 	# if ! mountpoint -q ${S3QL_MOUNTPOINT}; then
   #       echo "$DESC ${S3QL_STORAGE_URL}/${S3QL_PREFIX} is currently not mounted at ${S3QL_MOUNTPOINT}"
   #       exit 1
-  #   fi
-    echo "Status of $DESC ${S3QL_STORAGE_URL}/${S3QL_PREFIX} at ${S3QL_MOUNTPOINT}"
+  # fi
+  echo "Status of $DESC ${S3QL_STORAGE_URL}/${S3QL_PREFIX} at ${S3QL_MOUNTPOINT}"
 	s3qlstat ${S3QL_MOUNTPOINT}
 	exit "$?"
 	;;
   *)
-	echo "Usage: s3ql {start|stop|status}" >&2
+	echo "Usage: s3ql {makefs | mount | unmount | status}" >&2
 	exit 3
 	;;
 esac

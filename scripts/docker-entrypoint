@@ -13,12 +13,13 @@ printf '%s\n' \
 
 chmod 0600 ${S3QL_AUTHINFO_FILE}
 
+printf '%s\n' "${S3QL_CRONTAB}" > /etc/crontab
+
 # On first run ...
 if [ ! -e /s3ql-fs-created ]; then
     touch /s3ql-fs-created
 
-    # Create S3QL encrypted filesystem (run only once).
-    printf '%s\n' "${S3QL_FS_PASSPHRASE}" "${S3QL_FS_PASSPHRASE}" | mkfs.s3ql --authfile ${S3QL_AUTHINFO_FILE} --cachedir ${S3QL_CACHE_DIR} ${S3QL_STORAGE_URL}/${S3QL_PREFIX}
+    s3ql makefs
 fi
 
 echo -e "\n========================================================"
@@ -30,12 +31,12 @@ echo -e   "========================================================\n"
 
 # When container is stopped, unmount s3ql cleanly.
 term_handler() {
-    s3ql stop
+    s3ql unmount
 }
 
 trap 'term_handler' SIGTERM
 
 # Mount s3ql filesystem and wait.
 supercronic /etc/crontab &
-s3ql start &
+s3ql mount &
 wait ${!}
