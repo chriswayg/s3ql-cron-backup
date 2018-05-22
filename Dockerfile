@@ -42,7 +42,7 @@ RUN apk --no-cache add --update \
  # Build s3ql and run tests
  && python3 setup.py build_ext --inplace \
  && mkdir -pv /root/.s3ql/ \
- # && python3 -m pytest -rs tests/ \
+ && python3 -m pytest -rs tests/ \
  # Install s3ql in /usr
  && python3 setup.py install \
  # Remove build related stuff
