@@ -1,0 +1,31 @@
+#!/bin/sh
+set -o errexit
+
+echo -e "\n========================================================"
+
+printf '%s\n' \
+     "[fs]" \
+     "storage-url: ${S3QL_STORAGE_URL}/${S3QL_PREFIX}" \
+     "backend-login: ${S3QL_BACKEND_LOGIN}" \
+     "backend-password: ${S3QL_BACKEND_PASSWORD}" \
+     "fs-passphrase: ${S3QL_FS_PASSPHRASE}" \
+     > "${S3QL_AUTHINFO_FILE}"
+
+chmod 0600 ${S3QL_AUTHINFO_FILE}
+
+# On first run ...
+if [ ! -e /s3ql-fs-created ]; then
+    touch /s3ql-fs-created
+
+    # Create S3QL encrypted filesystem (run only once).
+    printf '%s\n' "${S3QL_FS_PASSPHRASE}" "${S3QL_FS_PASSPHRASE}" | mkfs.s3ql --authfile ${S3QL_AUTHINFO_FILE} --cachedir ${S3QL_CACHE_DIR} ${S3QL_STORAGE_URL}/${S3QL_PREFIX}
+fi
+
+echo -e "\n========================================================"
+# Display OS version and S3QL version in log
+echo -e   "Alpine Version: \c" && cat /etc/alpine-release
+echo -e   "Version \c" && mount.s3ql --version
+echo -e   "========================================================\n"
+
+# else default to run whatever the user wanted like "/bin/sh"
+exec "$@"

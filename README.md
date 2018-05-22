@@ -4,6 +4,13 @@
 
 ## How to Use
 
+```
+S3QL_STORAGE_URL="gs://s3ql_backup_1"
+S3QL_PREFIX="default"
+S3QL_BACKEND_LOGIN="ABCDEFG..."
+S3QL_BACKEND_PASSWORD="qwertyuiop"
+S3QL_FS_PASSPHRASE="asdfghjklzxcvbnm"
+```
 
 ## Notes
 

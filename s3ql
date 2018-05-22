@@ -1,0 +1,63 @@
+#!/bin/sh
+# Description: S3QL is an encrypting filesystem that stores its data online
+#
+
+DESC="[S3QL filesystem]"
+
+mkdir -p ${S3QL_MOUNTPOINT}
+mkdir -p /var/log/s3ql
+
+case "$1" in
+  start)
+	if mountpoint -q "${S3QL_MOUNTPOINT}"; then
+        echo "ERROR: $DESC ${S3QL_STORAGE_URL}/${S3QL_PREFIX} is already mounted on ${S3QL_MOUNTPOINT}"
+		exit 1
+	fi
+	echo "Mounting $DESC" "${S3QL_STORAGE_URL}/${S3QL_PREFIX} on ${S3QL_MOUNTPOINT}"
+	# Check and mount file system
+	fsck.s3ql --batch --log /var/log/s3ql/fsck.log --authfile ${S3QL_AUTHINFO_FILE} ${S3QL_STORAGE_URL}/${S3QL_PREFIX}
+	STA=$?
+	if [ $STA -eq 0 ]; then
+        echo "Successfully checked filesystem"
+    else
+        echo "ERROR: this is the error code: $STA"
+		exit $STA
+	fi
+	mount.s3ql --fg ${S3QL_MOUNT_OPTIONS} --log /var/log/s3ql/mount.log --authfile ${S3QL_AUTHINFO_FILE} ${S3QL_STORAGE_URL}/${S3QL_PREFIX} ${S3QL_MOUNTPOINT}
+	if [ $STA -eq 0 ]; then
+        echo "Successfully mounted on ${S3QL_MOUNTPOINT}"
+    else
+        echo "ERROR: this is the error code: $STA"
+		exit $STA
+	fi
+	;;
+  stop)
+	if ! mountpoint -q ${S3QL_MOUNTPOINT}; then
+        echo "ERROR: $DESC ${S3QL_STORAGE_URL}/${S3QL_PREFIX} is currently not mounted on ${S3QL_MOUNTPOINT}"
+        exit 1
+    fi
+	echo "Unmounting $DESC ${S3QL_STORAGE_URL}/${S3QL_PREFIX} from ${S3QL_MOUNTPOINT}"
+        s3qlctrl flushcache ${S3QL_MOUNTPOINT}
+	      s3qlctrl upload-meta ${S3QL_MOUNTPOINT}
+        umount.s3ql ${S3QL_MOUNTPOINT}
+	if [ $? -eq 0 ]; then
+        echo "Successfully unmounted ${S3QL_MOUNTPOINT}"
+    else
+        echo "ERROR: this is the error code: $STA"
+		exit $STA
+	fi
+	;;
+  status)
+	if ! mountpoint -q ${S3QL_MOUNTPOINT}; then
+        echo "$DESC ${S3QL_STORAGE_URL}/${S3QL_PREFIX} is currently not mounted on ${S3QL_MOUNTPOINT}"
+        exit 1
+    fi
+    echo "Status of $DESC ${S3QL_STORAGE_URL}/${S3QL_PREFIX} on ${S3QL_MOUNTPOINT}"
+	s3qlstat ${S3QL_MOUNTPOINT}
+	exit "$?"
+	;;
+  *)
+	echo "Usage: rc-service s3ql {start|stop|status}" >&2
+	exit 3
+	;;
+esac
