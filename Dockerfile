@@ -7,15 +7,10 @@ ENV S3QL_AUTHINFO_FILE="/root/.s3ql/authinfo2"
 ENV S3QL_MOUNT_OPTIONS="--allow-other"
 ENV S3QL_MOUNTPOINT="/mnt/s3ql"
 ENV S3QL_PREFIX="default"
+ENV S3QL_CRONTAB="@daily echo 'No backup command has been set!'"
 
 ENV SUPERCRONIC_URL=https://github.com/aptible/supercronic/releases/download/v0.1.5/supercronic-linux-amd64
 ENV SUPERCRONIC_SHA1SUM=9aeb41e00cc7b71d30d33c57a2333f2c2581a201
-
-# Add cron for containers
-RUN wget -O /usr/local/bin/supercronic ${SUPERCRONIC_URL} \
- && echo "${SUPERCRONIC_SHA1SUM}  /usr/local/bin/supercronic" | sha1sum -c - \
- && chmod +x /usr/local/bin/supercronic \
- && printf '%s\n' "# Run every minute" "*/1 * * * * echo 'hello'" > /etc/crontab
 
 # Install dependencies.
 RUN apk --no-cache add --update \
@@ -53,11 +48,13 @@ RUN apk --no-cache add --update \
  # Remove build related stuff
  && pip3 uninstall -y pytest \
  && apk del build-base python3-dev attr-dev fuse-dev sqlite-dev \
- && rm -r /tmp/s3ql-${S3QL_VERSION} \
- && ls -R /tmp \
+ && rm -r /tmp/s3ql-* \
  && echo -e "*** Installed \c" \
  && mount.s3ql --version \
- && mkdir -pv ${S3QL_MOUNTPOINT}
+ # Add cron for containers
+ && wget -q -O /usr/local/bin/supercronic ${SUPERCRONIC_URL} \
+ && echo "${SUPERCRONIC_SHA1SUM}  /usr/local/bin/supercronic" | sha1sum -c - \
+ && chmod +x /usr/local/bin/supercronic
 
 # Copy docker-entrypoint, s3ql
 COPY ./scripts/ /usr/local/bin/
