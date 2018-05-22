@@ -1,6 +1,3 @@
-# docker run --cap-add mknod --cap-add sys_admin --device=/dev/fuse s3ql
-## TODO: volume mounts that can be used by other containers
-
 FROM alpine:latest
 LABEL maintainer="Christian Wagner https://github.com/chriswayg"
 ENV TERM="xterm"
@@ -11,9 +8,17 @@ ENV S3QL_MOUNT_OPTIONS="--allow-other"
 ENV S3QL_MOUNTPOINT="/mnt/s3ql"
 ENV S3QL_PREFIX="default"
 
+ENV SUPERCRONIC_URL=https://github.com/aptible/supercronic/releases/download/v0.1.5/supercronic-linux-amd64
+ENV SUPERCRONIC_SHA1SUM=9aeb41e00cc7b71d30d33c57a2333f2c2581a201
+
+# Add cron for containers
+RUN wget -O /usr/local/bin/supercronic ${SUPERCRONIC_URL} \
+ && echo "${SUPERCRONIC_SHA1SUM}  /usr/local/bin/supercronic" | sha1sum -c - \
+ && chmod +x /usr/local/bin/supercronic \
+ && printf '%s\n' "# Run every minute" "*/1 * * * * echo 'hello'" > /etc/crontab
+
 # Install dependencies.
 RUN apk --no-cache add --update \
-      shadow \
       coreutils \
       util-linux \
       tar \
@@ -39,10 +44,9 @@ RUN apk --no-cache add --update \
  && wget -q https://bitbucket.org/nikratio/s3ql/downloads/s3ql-${S3QL_VERSION}.tar.bz2 \
  && tar jxf s3ql-${S3QL_VERSION}.tar.bz2 \
  && cd /tmp/s3ql-${S3QL_VERSION} \
- # Build and test s3ql
+ # Build s3ql and run tests
  && python3 setup.py build_ext --inplace \
- && mkdir -pv ~/.s3ql/ \
- && cd /tmp/s3ql-2.26 \
+ && mkdir -pv /root/.s3ql/ \
  # && python3 -m pytest -rs tests/ \
  # Install s3ql in /usr
  && python3 setup.py install \
@@ -50,14 +54,12 @@ RUN apk --no-cache add --update \
  && pip3 uninstall -y pytest \
  && apk del build-base python3-dev attr-dev fuse-dev sqlite-dev \
  && rm -r /tmp/s3ql-${S3QL_VERSION} \
+ && ls -R /tmp \
  && echo -e "*** Installed \c" \
- && mount.s3ql --version
+ && mount.s3ql --version \
+ && mkdir -pv ${S3QL_MOUNTPOINT}
 
 # Copy docker-entrypoint, s3ql
 COPY ./scripts/ /usr/local/bin/
 
-# Persist data
-#VOLUME /mnt/s3ql
-
 ENTRYPOINT ["docker-entrypoint"]
-CMD ["/sbin/init"]

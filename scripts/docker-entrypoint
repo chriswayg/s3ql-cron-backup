@@ -23,9 +23,19 @@ fi
 
 echo -e "\n========================================================"
 # Display OS version and S3QL version in log
-echo -e   "Alpine Version: \c" && cat /etc/alpine-release
-echo -e   "Version \c" && mount.s3ql --version
+echo      "VERSIONS:"
+echo -e   "Alpine \c" && cat /etc/alpine-release
+echo      mount.s3ql --version
 echo -e   "========================================================\n"
 
-# else default to run whatever the user wanted like "/bin/sh"
-exec "$@"
+# When container is stopped, unmount s3ql cleanly.
+term_handler() {
+    s3ql stop
+}
+
+trap 'term_handler' SIGTERM
+
+# Mount s3ql filesystem and wait.
+supercronic /etc/crontab &
+s3ql start &
+wait ${!}
