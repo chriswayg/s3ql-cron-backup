@@ -9,7 +9,7 @@ ENV S3QL_MOUNTPOINT="/mnt/s3ql"
 ENV S3QL_PREFIX="default"
 ENV S3QL_CRONTAB="@daily echo 'No backup command has been set!'"
 
-ENV SUPERCRONIC_URL=https://github.com/aptible/supercronic/releases/download/v0.1.5/supercronic-linux-amd64
+ENV SUPERCRONIC_URL=https://github.com/aptible/supercronic/releases/download/v0.1.9/supercronic-linux-amd64
 ENV SUPERCRONIC_SHA1SUM=9aeb41e00cc7b71d30d33c57a2333f2c2581a201
 
 # Install dependencies.
@@ -34,9 +34,9 @@ RUN apk --no-cache add --update \
  && pip3 install pycrypto defusedxml requests apsw llfuse dugong setuptools pytest \
  && cd /tmp \
  # Determine latest version of s3ql and download source code
- && S3QL_VERSION=$(wget -q https://bitbucket.org/nikratio/s3ql/raw/default/Changes.txt -O - | grep -m1  "20" | sed 's/.*\([0-9].[0-9][0-9]\)/\1/') \
+ && S3QL_VERSION=$(wget -q https://raw.githubusercontent.com/s3ql/s3ql/master/Changes.txt -O - | grep -m1  "20" | sed 's/.*\([0-9].[0-9][0-9]\)/\1/') \
  && echo "*** Downloading S3QL Version: ${S3QL_VERSION}" \
- && wget -q https://bitbucket.org/nikratio/s3ql/downloads/s3ql-${S3QL_VERSION}.tar.bz2 \
+ && wget -q  https://github.com/s3ql/s3ql/releases/download/release-${S3QL_VERSION}/s3ql-${S3QL_VERSION}.tar.bz2  \
  && tar jxf s3ql-${S3QL_VERSION}.tar.bz2 \
  && cd /tmp/s3ql-${S3QL_VERSION} \
  # Build s3ql and run tests
