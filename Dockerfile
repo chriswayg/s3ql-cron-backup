@@ -39,7 +39,7 @@ RUN cd /tmp \
  && echo "*** Downloading S3QL Version: ${S3QL_VERSION}" \
  && wget -q  https://github.com/s3ql/s3ql/releases/download/release-${S3QL_VERSION}/s3ql-${S3QL_VERSION}.tar.bz2  \
  && tar jxf s3ql-${S3QL_VERSION}.tar.bz2 \
- && cd /tmp/s3ql-${S3QL_VERSION} 
+ && cd /tmp/s3ql-${S3QL_VERSION} \
  # Build s3ql and run tests \
  && python3 setup.py build_ext --inplace \
  && mkdir -pv /root/.s3ql/ \
