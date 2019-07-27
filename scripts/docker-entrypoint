@@ -26,7 +26,7 @@ echo -e "\n========================================================"
 # Display OS version and S3QL version in log
 echo      "VERSIONS:"
 echo -e   "Alpine \c" && cat /etc/alpine-release
-echo      mount.s3ql --version
+echo      $(mount.s3ql --version)
 echo -e   "========================================================\n"
 
 # When container is stopped, unmount s3ql cleanly.
