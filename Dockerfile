@@ -35,7 +35,7 @@ RUN apk --no-cache add --update \
       openssl-dev \
  # Upgrade pip and install Python module dependencies
  && pip3 install --upgrade pip \
- && pip3 install cryptography defusedxml requests apsw llfuse dugong setuptools pytest
+ && pip3 install cryptography defusedxml requests apsw llfuse dugong setuptools pytest google-auth-oauthlib google-auth 
 RUN cd /tmp \
  # Determine latest version of s3ql and download source code
  && S3QL_VERSION=$(wget -q https://raw.githubusercontent.com/s3ql/s3ql/master/Changes.txt -O - | grep -m1  "20" | grep -P -o '[0-9]+\.[0-9]+$') \
