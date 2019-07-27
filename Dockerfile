@@ -40,8 +40,8 @@ RUN cd /tmp \
  && wget -q  https://github.com/s3ql/s3ql/releases/download/release-${S3QL_VERSION}/s3ql-${S3QL_VERSION}.tar.bz2  \
  && tar jxf s3ql-${S3QL_VERSION}.tar.bz2 \
  && cd /tmp/s3ql-${S3QL_VERSION} 
- # Build s3ql and run tests
-RUN python3 setup.py build_ext --inplace \
+ # Build s3ql and run tests \
+ && python3 setup.py build_ext --inplace \
  && mkdir -pv /root/.s3ql/ \
  && python3 -m pytest -rs tests/ \
  # Install s3ql in /usr
