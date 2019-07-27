@@ -17,6 +17,7 @@ RUN apk --no-cache add --update \
       coreutils \
       util-linux \
       tar \
+      grep \
       psmisc \
       procps \
       openssl \
@@ -29,7 +30,9 @@ RUN apk --no-cache add --update \
       attr-dev \
       fuse-dev \
       sqlite-dev \
-      grep \
+      musl-dev \
+      libffi-dev \
+      openssl-dev \
  # Upgrade pip and install Python module dependencies
  && pip3 install --upgrade pip \
  && pip3 install cryptography defusedxml requests apsw llfuse dugong setuptools pytest
@@ -48,7 +51,7 @@ RUN cd /tmp \
  && python3 setup.py install 
  # Remove build related stuff
 RUN pip3 uninstall -y pytest \
- && apk del build-base python3-dev attr-dev fuse-dev sqlite-dev grep \
+ && apk del grep build-base python3-dev attr-dev fuse-dev sqlite-dev musl-dev libffi-dev openssl-dev \
  && rm -r /tmp/s3ql-* \
  && echo -e "*** Installed \c" \
  && mount.s3ql --version 
