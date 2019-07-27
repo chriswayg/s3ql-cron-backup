@@ -34,7 +34,7 @@ RUN apk --no-cache add --update \
  && pip3 install pycrypto defusedxml requests apsw llfuse dugong setuptools pytest \
  && cd /tmp \
  # Determine latest version of s3ql and download source code
- && S3QL_VERSION=$(wget -q https://raw.githubusercontent.com/s3ql/s3ql/master/Changes.txt -O - | grep -m1  "20" | | grep -P -o '[0-9]+\.[0-9]+$') \
+ && S3QL_VERSION=$(wget -q https://raw.githubusercontent.com/s3ql/s3ql/master/Changes.txt -O - | grep -m1  "20" | grep -P -o '[0-9]+\.[0-9]+$') \
  && echo "*** Downloading S3QL Version: ${S3QL_VERSION}" \
  && wget -q  https://github.com/s3ql/s3ql/releases/download/release-${S3QL_VERSION}/s3ql-${S3QL_VERSION}.tar.bz2  \
  && tar jxf s3ql-${S3QL_VERSION}.tar.bz2 \
