@@ -33,27 +33,27 @@ RUN apk --no-cache add --update \
  # Upgrade pip and install Python module dependencies
  && pip3 install --upgrade pip \
  && pip3 install pycrypto defusedxml requests apsw llfuse dugong setuptools pytest \
- && cd /tmp \
+ && cd /tmp 
  # Determine latest version of s3ql and download source code
- && S3QL_VERSION=$(wget -q https://raw.githubusercontent.com/s3ql/s3ql/master/Changes.txt -O - | grep -m1  "20" | grep -P -o '[0-9]+\.[0-9]+$') \
+RUN S3QL_VERSION=$(wget -q https://raw.githubusercontent.com/s3ql/s3ql/master/Changes.txt -O - | grep -m1  "20" | grep -P -o '[0-9]+\.[0-9]+$') \
  && echo "*** Downloading S3QL Version: ${S3QL_VERSION}" \
  && wget -q  https://github.com/s3ql/s3ql/releases/download/release-${S3QL_VERSION}/s3ql-${S3QL_VERSION}.tar.bz2  \
  && tar jxf s3ql-${S3QL_VERSION}.tar.bz2 \
- && cd /tmp/s3ql-${S3QL_VERSION} \
+ && cd /tmp/s3ql-${S3QL_VERSION} 
  # Build s3ql and run tests
- && python3 setup.py build_ext --inplace \
+RUN python3 setup.py build_ext --inplace \
  && mkdir -pv /root/.s3ql/ \
  && python3 -m pytest -rs tests/ \
  # Install s3ql in /usr
- && python3 setup.py install \
+ && python3 setup.py install 
  # Remove build related stuff
- && pip3 uninstall -y pytest \
+RUN pip3 uninstall -y pytest \
  && apk del build-base python3-dev attr-dev fuse-dev sqlite-dev grep \
  && rm -r /tmp/s3ql-* \
  && echo -e "*** Installed \c" \
- && mount.s3ql --version \
+ && mount.s3ql --version 
  # Add cron for containers
- && wget -q -O /usr/local/bin/supercronic ${SUPERCRONIC_URL} \
+RUN wget -q -O /usr/local/bin/supercronic ${SUPERCRONIC_URL} \
  && echo "${SUPERCRONIC_SHA1SUM}  /usr/local/bin/supercronic" | sha1sum -c - \
  && chmod +x /usr/local/bin/supercronic
 
