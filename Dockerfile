@@ -19,6 +19,7 @@ RUN apk --no-cache add --update \
       util-linux \
       tar \
       grep \
+      curl \
       psmisc \
       procps \
       openssl \
@@ -50,18 +51,19 @@ RUN cd /tmp \
  && python3 -m pytest -rs tests/ \
  # Install s3ql in /usr
  && python3 setup.py install 
- # Remove build related stuff
-RUN pip3 uninstall -y pytest \
- && apk del grep build-base python3-dev attr-dev fuse-dev sqlite-dev musl-dev libffi-dev openssl-dev \
- && rm -r /tmp/s3ql-* \
- && echo -e "*** Installed \c" \
- && mount.s3ql --version 
  # Add cron for containers
 RUN curl -fsSLO "$SUPERCRONIC_URL" \
  && echo "${SUPERCRONIC_SHA1SUM}  ${SUPERCRONIC}" | sha1sum -c - \
  && chmod +x "$SUPERCRONIC" \
  && mv "$SUPERCRONIC" "/usr/local/bin/${SUPERCRONIC}" \
  && ln -s "/usr/local/bin/${SUPERCRONIC}" /usr/local/bin/supercronic
+ # Remove build related stuff
+RUN pip3 uninstall -y pytest \
+ && apk del grep curl build-base python3-dev attr-dev fuse-dev sqlite-dev musl-dev libffi-dev openssl-dev \
+ && rm -r /tmp/s3ql-* \
+ && echo -e "*** Installed \c" \
+ && mount.s3ql --version 
+
 
 # Copy docker-entrypoint, s3ql
 COPY ./scripts/ /usr/local/bin/
